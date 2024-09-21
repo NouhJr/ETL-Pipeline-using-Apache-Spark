@@ -9,6 +9,7 @@ from stg_area import *
 load_dotenv()
 source_files_dir_path = os.environ.get('SOURCE_FILES_DIR')
 source_files_arch_dir_path = os.environ.get('SOURCE_FILES_ARCHIVE_DIR')
+stg_files_dir_path = os.environ.get('STG_FILES_DIR')
 reference_date = os.environ.get('REFERENCE_DATE')
 
 #Function to wait for new files.
@@ -37,7 +38,11 @@ class MyHandler(FileSystemEventHandler):
                 file_name, file_ext = os.path.splitext(file)
                 file_dict[final_path] = file_ext[1:]
         #Creating new dir named with files process date to archive source files
-        os.makedirs(source_files_arch_dir_path+'/'+reference_date)        
+        if not os.path.exists(source_files_arch_dir_path+'/'+reference_date):
+            os.makedirs(source_files_arch_dir_path+'/'+reference_date)
+        #Creating new dir named with files process date to store stg target files
+        if not os.path.exists(stg_files_dir_path+'/'+reference_date):
+            os.makedirs(stg_files_dir_path+'/'+reference_date)            
         return file_dict
 
     #Function to wait for file occurrence event and apply actions to it.
