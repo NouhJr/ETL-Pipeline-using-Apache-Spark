@@ -9,3 +9,5 @@ STG_Area_Files_Dir/
 DELTA_Area_Files_Dir/
 DWH_Area_Files_Dir/
 Logs/
+.vscode/
+__pycache__/
