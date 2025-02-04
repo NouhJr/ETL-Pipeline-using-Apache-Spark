@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pyspark.sql import *
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+import delta_area
 
 #Creating Apache Spark session.
 spark = SparkSession.Builder().master("local").appName("ETL_Pipeline").getOrCreate() # type: ignore
@@ -42,7 +43,9 @@ def add_stg_columns(dataframes):
         final_df = df_rowHash.withColumn("REFERENCE_DATE", lit(reference_date))
         #final_df.limit(5).show(truncate=False)
         write_df_to_file(final_df)
-    archive_files()    
+    archive_files()
+    #Starting DELTA phase.
+    delta_area.start_delta()    
 
 
 #Function to create STG target files from created data frames.
