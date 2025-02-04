@@ -17,6 +17,7 @@ reference_date = os.environ.get('REFERENCE_DATE')
 
 #Function to wait for new files.
 def listen_for_file():
+    write_log("Waiting for source files....", "INFO")
     observer = Observer()
     event_handler = MyHandler()
     observer.schedule(event_handler, path= source_files_dir_path, recursive=False)
@@ -32,6 +33,7 @@ def listen_for_file():
 class MyHandler(FileSystemEventHandler):
     #Function to store file name and format in a dictionary
     def store_file_names_with_format(directory_path):
+        write_log("Processing source files....", "INFO")
         file_dict = {}
         for root, dirs, files in os.walk(directory_path):
             for file in files:
@@ -41,11 +43,15 @@ class MyHandler(FileSystemEventHandler):
                 file_name, file_ext = os.path.splitext(file)
                 file_dict[final_path] = file_ext[1:]
         #Creating new dir named with files process date to archive source files
+        write_log("Creating new directory to archive source files....", "INFO")
         if not os.path.exists(source_files_arch_dir_path+'/'+reference_date):
             os.makedirs(source_files_arch_dir_path+'/'+reference_date)
+            write_log("Source files archive directory created successfully.", "INFO")
         #Creating new dir named with files process date to store stg target files
+        write_log("Creating new directory to store stagging files....", "INFO")
         if not os.path.exists(stg_files_dir_path+'/'+reference_date):
-            os.makedirs(stg_files_dir_path+'/'+reference_date)            
+            os.makedirs(stg_files_dir_path+'/'+reference_date)
+            write_log("Stagging files directory created successfully.", "INFO")            
         return file_dict
 
     #Function to wait for file occurrence event and apply actions to it.

@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pyspark.sql import *
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from create_logs import write_log
 import delta_area
 
 #Creating Apache Spark session.
@@ -38,18 +39,23 @@ def get_files_info(files_dict):
 
 #Function to add two new columns to each dataframe.
 def add_stg_columns(dataframes):
+    write_log("Processing source data....", "INFO")
     for df in dataframes:
         df_rowHash = df.withColumn("ROW_HASH", md5(concat_ws("||", *df.columns)))
         final_df = df_rowHash.withColumn("REFERENCE_DATE", lit(reference_date))
         #final_df.limit(5).show(truncate=False)
         write_df_to_file(final_df)
     archive_files()
+    write_log("Stagging area finished successfully.", "INFO")
+    write_log("Application finished", "INFO")
+    exit()
     #Starting DELTA phase.
     delta_area.start_delta()    
 
 
 #Function to create STG target files from created data frames.
 def write_df_to_file(df):
+    write_log("Creating new stagging files from processed source data....", "INFO")
     for source_file_name in list_source_files_names:
         df.write.options(header='True', delimiter=',').mode('overwrite').csv(stg_files_dir_path+'/'+reference_date+'/'+source_file_name)
         for root, dirs, files in os.walk(stg_files_dir_path+'/'+reference_date+'/'+source_file_name):
@@ -60,11 +66,14 @@ def write_df_to_file(df):
                     os.rename(stg_files_dir_path+'/'+reference_date+'/'+source_file_name+'/'+file, stg_files_dir_path+'/'+reference_date+'/'+source_file_name+'/'+source_file_name+'.csv')
                     shutil.copy(stg_files_dir_path+'/'+reference_date+'/'+source_file_name+'/'+source_file_name+'.csv', stg_files_dir_path+'/'+reference_date)
                     shutil.rmtree(stg_files_dir_path+'/'+reference_date+'/'+source_file_name, ignore_errors=True)
+    write_log("Stagging files created successfully.", "INFO")
 
 #Function to move the processed source files to the archive directory.
 def archive_files():
+    write_log("Moving source files to archive directory....", "INFO")
     for file_name in os.listdir(source_dir_path):
         shutil.move(source_dir_path+'/'+file_name, arch_dir_path+'/'+reference_date)
+    write_log("Source files archived successfully.", "INFO")    
 
 
 
