@@ -1,5 +1,4 @@
 # Ignore all .log files
-*.log
 *.env
 *.txt
 
@@ -9,3 +8,4 @@ Source_Files_Archive_Dir/
 STG_Area_Files_Dir/
 DELTA_Area_Files_Dir/
 DWH_Area_Files_Dir/
+Logs/

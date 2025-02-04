@@ -1,9 +1,11 @@
 #Importing used packages
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from stg_area import *
+from create_logs import *
 
 #Loading secured variables from .env file
 load_dotenv()
@@ -11,6 +13,7 @@ source_files_dir_path = os.environ.get('SOURCE_FILES_DIR')
 source_files_arch_dir_path = os.environ.get('SOURCE_FILES_ARCHIVE_DIR')
 stg_files_dir_path = os.environ.get('STG_FILES_DIR')
 reference_date = os.environ.get('REFERENCE_DATE')
+
 
 #Function to wait for new files.
 def listen_for_file():
