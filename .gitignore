@@ -8,6 +8,7 @@ Source_Files_Archive_Dir/
 STG_Area_Files_Dir/
 DELTA_Area_Files_Dir/
 DWH_Area_Files_Dir/
-Logs/
+App_logs/
+GCP_Service_Account_Key/
 .vscode/
 __pycache__/

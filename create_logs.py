@@ -23,6 +23,8 @@ LOG_LEVELS = {
 #Creating new dir named with files process date in Logs dir to store log files
 def create_log_dir_and_new_log_file():
     if not os.path.exists(log_file_path):
+        with open(log_file_path, "w") as log_file:
+            log_file.write("")
         write_log('Application Started', 'INFO')
 
 # Function to write log messages with log level
