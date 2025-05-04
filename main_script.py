@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 #Our Created script to watch for file occurrence event
 from file_listener import *
-from stg_area import *
+from Spark_Logic.stg_area import *
 from create_logs import *
 
 #Main entry for the script

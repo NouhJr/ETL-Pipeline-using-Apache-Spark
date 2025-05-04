@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from stg_area import *
+from Spark_Logic.stg_area import *
 from create_logs import *
 
 #Loading secured variables from .env file
@@ -35,19 +35,24 @@ class MyHandler(FileSystemEventHandler):
     def store_file_names_with_format(directory_path):
         write_log("Processing source files....", "INFO")
         file_dict = {}
-        for root, dirs, files in os.walk(directory_path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                abs_file_path = os.path.abspath(file_path)
-                final_path = abs_file_path.replace("\\","/")
-                file_name, file_ext = os.path.splitext(file)
-                file_dict[final_path] = file_ext[1:]
-        #Creating new dir named with files process date to archive source files
-        write_log("Creating new directory to archive source files....", "INFO")
-        if not os.path.exists(source_files_arch_dir_path+'/'+reference_date):
-            os.makedirs(source_files_arch_dir_path+'/'+reference_date)
-            write_log("Source files archive directory created successfully.", "INFO")
-        write_log("Source files archive directory already created.", "INFO")                
+        try:
+            for root, dirs, files in os.walk(directory_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    abs_file_path = os.path.abspath(file_path)
+                    final_path = abs_file_path.replace("\\","/")
+                    file_name, file_ext = os.path.splitext(file)
+                    file_dict[final_path] = file_ext[1:]
+            #Creating new dir named with files process date to archive source files
+            write_log("Creating new directory to archive source files....", "INFO")
+            if not os.path.exists(source_files_arch_dir_path+'/'+reference_date):
+                os.makedirs(source_files_arch_dir_path+'/'+reference_date)
+                write_log("Source files archive directory created successfully.", "INFO")
+            write_log("Source files archive directory already created.", "INFO")
+        except Exception as e:
+            write_log(f"{str(e)}", "ERROR")
+            write_log(f"Application terminated.", "INFO")
+            raise                    
         return file_dict
 
     #Function to wait for file occurrence event and apply actions to it.
