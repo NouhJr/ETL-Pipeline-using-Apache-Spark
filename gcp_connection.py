@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from create_logs import write_log
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from Spark_Logic.spark_initialize import load_dataframe_from_gcp
 
 load_dotenv()
 service_account_file = os.environ.get('SERVICE_ACCOUNT_FILE')
@@ -25,10 +26,12 @@ def upload_dataframes_to_bigquery(data_set_id, data_frame, table_name, upload_ty
 
     if upload_type == "stg":
         # Delete existing data with the specific reference date
-        write_log(f"Running pre SQL statement....", "INFO")
+        write_log(f"Running pre SQL statement on table: {table_name.lower()} ....", "INFO")
+        table_id = f"{project_id}.{data_set_id}.{table_name.lower()}"
         try:
+            client.get_table(table_id)  # Check if the table exists
             query = f"""
-                DELETE FROM `{project_id}.{data_set_id}.{table_name.lower()}`
+                DELETE FROM `{table_id}`
                 WHERE REFERENCE_DATE = DATE('{reference_date}')
             """
             pre_sql_job_config = bigquery.QueryJobConfig()
@@ -36,9 +39,13 @@ def upload_dataframes_to_bigquery(data_set_id, data_frame, table_name, upload_ty
             delete_job.result()
             write_log(f"Pre SQL statement finished successfully.", "INFO")
         except Exception as e:
-            write_log(f"{str(e)}", "ERROR")
-            write_log(f"Application terminated.", "INFO")
-            raise
+            if "Not found" in str(e):
+                write_log(f"Table: {table_name.lower()}, does not exist. Skipping delete operation.", "INFO")
+            else:
+                write_log(f"{str(e)}", "ERROR")
+                write_log(f"Application terminated.", "INFO")
+                exit()
+                raise
 
     # Configure job for loading data
     upload_job_config = bigquery.LoadJobConfig(
@@ -56,6 +63,23 @@ def upload_dataframes_to_bigquery(data_set_id, data_frame, table_name, upload_ty
     except Exception as e:
         write_log(f"{str(e)}", "ERROR")
         write_log(f"Application terminated.", "INFO")
+        exit()
         raise    
 
 
+def load_bigquery_tables_to_df(data_set_id, list_files_names):
+    write_log("Loading data from BigQuery....", "INFO")
+    dataframes = []
+    try:
+        for source_file_name in list_files_names:
+            table_name = source_file_name.lower()
+            table = f"{data_set_id}.{table_name}"
+            df = load_dataframe_from_gcp(table)
+            dataframes.append(df)
+        write_log("Data loaded successfully.", "INFO")
+        return dataframes    
+    except Exception as e:
+        write_log(f"{str(e)}", "ERROR")
+        write_log(f"Application terminated.", "INFO")
+        exit()
+        raise    

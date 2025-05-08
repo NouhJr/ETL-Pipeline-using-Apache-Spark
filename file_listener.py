@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from Spark_Logic.stg_area import *
+from Spark_Logic.stg_area import get_files_info
 from create_logs import *
 
 #Loading secured variables from .env file

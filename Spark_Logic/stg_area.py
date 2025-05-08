@@ -6,8 +6,9 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from dotenv import load_dotenv
 from create_logs import write_log
-from gcp_connection import upload_dataframes_to_bigquery
-from spark_initialize import load_dataframe
+from gcp_connection import *
+from Spark_Logic.spark_initialize import load_dataframe
+from Spark_Logic.delta_area import start_delta
 
 #Loading secured variables from .env file
 load_dotenv()
@@ -41,13 +42,12 @@ def stagging_logic(dataframes, list_source_files_names):
         for df, file in zip(dataframes, list_source_files_names):
             df_rowHash = df.withColumn("ROW_HASH", md5(concat_ws("||", *df.columns)))
             final_df = df_rowHash.withColumn("REFERENCE_DATE", to_date(lit(reference_date)))
-            final_df.show(5,truncate=False)
+            #final_df.show(5,truncate=False)
             upload_dataframes_to_bigquery(stg_dataset_id,final_df,file,"stg")
         archive_files()
         write_log("Stagging area finished successfully.", "INFO")
         #Starting DELTA phase.
-        # write_log("Strting delta phase....", "INFO")
-        # load_bigquery_tables_to_df(project_id, stg_dataset_id, file_names)
+        start_delta(stg_dataset_id, file_names)
     except Exception as e:
         write_log(f"{str(e)}", "ERROR")
         write_log(f"Application terminated.", "INFO")
@@ -69,9 +69,7 @@ def archive_files():
     except Exception as e:
         write_log(f"{str(e)}", "ERROR")
         write_log(f"Application terminated.", "INFO")
-        raise     
-    write_log("Application finished successfully.", "INFO")
-    exit()
+        raise
 
     
 
